@@ -3,16 +3,20 @@ import request from "../../utils/request";
 
 const state = {
   step: {
-    payAccount: "123456"
+    payAccount: "123456",
+    receiveAccount: {
+      type: "alipay",
+      number: ""
+    }
   }
 };
 
 const actions = {
-  async submitStepForm({ commit }, { payload }) {
+  async submitStepForm({ commit }, payload) {
     await request({
       url: "/api/form",
       method: "POST",
-      data: payload
+      data: payload.payload
     });
     commit("saveStepFormData", payload);
     router.push("/form/step-form/result");
