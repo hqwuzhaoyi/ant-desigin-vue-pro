@@ -1,9 +1,12 @@
 import Vue from "vue";
 import Router from "vue-router";
-import Home from "./views/Home.vue";
+import { findLast } from "lodash";
+import { notification } from "ant-design-vue";
 import NProgess from "nprogress";
 import "nprogress/nprogress.css";
 import NotFound from "./views/404";
+import Forbidden from "./views/403";
+import { check, isLogin } from "./utils/auth";
 // import RenderRouterView from "./components/RenderRouterView";
 Vue.use(Router);
 
@@ -13,6 +16,7 @@ const router = new Router({
   routes: [
     {
       path: "/user",
+      hideInMenu: true,
       component: () =>
         import(/* webpackChunkName: "layout" */ "./layouts/UserLayout"),
       // component: { render: h => h("router-view") },
@@ -167,29 +171,42 @@ const router = new Router({
       ]
     },
     {
-      path: "/",
-      name: "home",
-      component: Home
-    },
-    {
-      path: "/about",
-      name: "about",
-      // route level code-splitting
-      // this generates a separate chunk (about.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () =>
-        import(/* webpackChunkName: "about" */ "./views/About.vue")
+      path: "/403",
+      name: "403",
+      hideInMenu: true,
+      component: Forbidden
     },
     {
       path: "*",
       name: "404",
+      hideInMenu: true,
       component: NotFound
     }
   ]
 });
 
 router.beforeEach((to, from, next) => {
-  NProgess.start();
+  if (to.path != from.path) {
+    NProgess.start();
+  }
+  const record = findLast(to.matched, record => record.meta.authority);
+  if (record && !check(record.meta.authority)) {
+    if (!isLogin && to.path !== "/user/login") {
+      next({
+        path: "/user/login"
+      });
+    } else if (to.path !== 403) {
+      notification.error({
+        message: "403",
+        description: "请联系管理员咨询，你没有权限访问"
+      });
+
+      next({
+        path: "/403"
+      });
+    }
+    NProgess.done();
+  }
   next();
 });
 router.afterEach(() => {

@@ -8,12 +8,31 @@ import store from "./store";
 // import "ant-design-vue/dist/antd.less";
 // import "ant-design-vue/lib/button/style";
 
-import { Button } from "ant-design-vue";
-
+import {
+  Button,
+  Icon,
+  Layout,
+  Drawer,
+  Radio,
+  Menu,
+  Form,
+  Input
+} from "ant-design-vue";
+import Authorized from "./components/Authorized";
+import Auth from "./directives/auth";
 Vue.config.productionTip = false;
 
 // Vue.use(antd);
 Vue.use(Button);
+Vue.use(Layout);
+Vue.use(Icon);
+Vue.use(Drawer);
+Vue.use(Radio);
+Vue.use(Menu);
+Vue.use(Form);
+Vue.use(Input);
+Vue.component("Authorized", Authorized);
+Vue.use(Auth);
 
 new Vue({
   router,

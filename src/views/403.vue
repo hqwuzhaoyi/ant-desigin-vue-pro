@@ -1,5 +1,7 @@
 <template>
-  <div>Ant Design Vue Created by Shawn Ng</div>
+  <div>
+    403
+  </div>
 </template>
 
 <script>
