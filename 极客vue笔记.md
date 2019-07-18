@@ -688,3 +688,46 @@ export default {
         ></ReceiveAccount>
       </a-form-item>
 ```
+
+# IconFont 图标使用
+在官网选择Symbol,点击生成链接
+```
+const IconFont = Icon.createFromIconfontCN({
+  scriptUrl: "//at.alicdn.com/t/font_1301960_5011bg8e03k.js" // 在 iconfont.cn 上生成
+});
+Vue.component("IconFont", IconFont);
+
+//使用
+  <IconFont type="icon-icon-404-copy" />
+```
+
+# 添加SVG 图片
+```
+<img :src="logo" alt="" />
+import logo from "@/assets/logo.png";
+export default {
+  data() {
+    return {
+      logo
+    };
+  }
+};
+```
+直接当SVG组件使用
+```
+//vue.config.js
+chainWebpack: config => {
+    const svgRule = config.module.rule("svg");
+
+    // 清除已有的所有 loader。
+    // 如果你不这样做，接下来的 loader 会附加在该规则现有的 loader 之后。
+    svgRule.uses.clear();
+
+    // 添加要替换的 loader
+    svgRule.use("vue-svg-loader").loader("vue-svg-loader");
+  },
+//xxx.vue
+<Logo />
+import Logo from "@/assets/logo.svg";
+components:{Logo}
+```
