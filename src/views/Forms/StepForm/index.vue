@@ -1,6 +1,5 @@
 <template>
   <div>
-    StepForm
     <router-view></router-view>
   </div>
 </template>

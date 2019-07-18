@@ -369,3 +369,245 @@ function request(options) {
 }
 export default request;
 ```
+//表单自动校验、动态赋值
+```
+<a-form :form="form">
+    <a-input
+          v-decorator="[//自动校验
+            'fieldA',
+            {
+              initialValue: fieldA,
+              rules: [{ required: true, min: 6, message: '必须大于5个字符' }]
+            }
+          ]"
+          placeholder="input placeholder"
+    />
+    <a-input v-decorator="['fieldB']" placeholder="input placeholder" />
+</a-form>
+
+methods: {
+    handleSubmit() {
+      this.form.validateFields((err, values) => {
+        if (!err) {
+          console.log(values);
+          // this.fieldA = values.fieldA;
+          // this.fieldB = values.fieldB;
+          Object.assign(this, values);//提交时把values中的值赋给this，相当于上面两句
+        }
+      });
+    }
+  },
+  mounted() {
+    setTimeout(() => {
+      this.form.setFieldsValue({ fieldA: "hello world" });//不应该用 v-model，可以使用 this.form.setFieldsValue 来动态改变表单值。
+    }, 3000);
+  }
+};
+```
+
+# 分布表单
+1. src下创建store文件夹，再创建modules文件夹，其下再新建form.js文件
+```
+import router from "../../router";
+import request from "../../utils/request";
+
+const state = {
+  step: {
+    payAccount: "123456"
+  }
+};
+
+const actions = {
+  async submitStepForm({ commit }, { payload }) {
+    await request({
+      url: "/api/form",
+      method: "POST",
+      data: payload
+    });
+    commit("saveStepFormData", payload);
+    router.push("/form/step-form/result");
+  }
+};
+
+const mutations = {
+  saveStepFormData(state, { payload }) {
+    state.step = {
+      ...state.step,
+      ...payload
+    };
+  }
+};
+
+export default {
+  namespaced: true,
+  state,
+  actions,
+  mutations
+};
+```
+1. store文件夹新建index.js，并把根目录的store.js删除,main.js修改`import store from "./store/index.js";`
+```
+import Vue from "vue";
+import Vuex from "vuex";
+import form from "./modules/form";
+
+Vue.use(Vuex);
+
+export default new Vuex.Store({
+  state: {},
+  modules: {
+    form
+  }
+});
+```
+1. Step1.vue
+```
+<template>
+  <div>
+    <a-form layout="horizontal" :form="form">
+      <a-form-item
+        label="付款账户"
+        :label-col="formItemLayout.labelCol"
+        :wrapper-col="formItemLayout.wrapperCol"
+      >
+        <a-input
+          v-decorator="[
+            'payAccount',
+            {
+              initialValue: step.payAccount,
+              rules: [{ required: true, message: '请输入付款账号' }]
+            }
+          ]"
+          placeholder="请输入付款账号"
+        ></a-input>
+      </a-form-item>
+      <a-form-item>
+        <a-button type="primary" @click="handleSubmit">下一步</a-button>
+      </a-form-item>
+    </a-form>
+  </div>
+</template>
+
+<script>
+export default {
+  data() {
+    this.form = this.$form.createForm(this);
+    return {
+      formItemLayout: {
+        labelCol: { span: 4 },
+        wrapperCol: { span: 14 }
+      }
+    };
+  },
+  computed: {
+    step() {
+      return this.$store.state.form.step;
+    }
+  },
+  methods: {
+    handleSubmit() {
+      const { form, $router, $store } = this;
+      form.validateFields((err, values) => {
+        if (!err) {
+          $store.commit({
+            type: "form/saveStepFormData",
+            payload: values
+          });
+          $router.push("/form/step-form/confirm");
+        }
+      });
+    }
+  }
+};
+</script>
+```
+1. Step2.vue
+```
+<template>
+  <div>
+    <a-form layout="horizontal" :form="form">
+      <a-form-item
+        label="付款账户"
+        :label-col="formItemLayout.labelCol"
+        :wrapper-col="formItemLayout.wrapperCol"
+      >
+        {{ step.payAccount }}
+      </a-form-item>
+      <a-form-item
+        label="密码"
+        :label-col="formItemLayout.labelCol"
+        :wrapper-col="formItemLayout.wrapperCol"
+      >
+        <a-input
+          v-decorator="[
+            'password',
+            {
+              initialValue: step.payAccount,
+              rules: [{ required: true, message: '请输入密码' }]
+            }
+          ]"
+          type="password"
+          placeholder="请输入付款密码"
+        ></a-input>
+      </a-form-item>
+      <a-form-item>
+        <a-button type="primary" @click="handleSubmit">提交</a-button>
+        <a-button style="marginLeft: 8px" @click="onPrev">上一步</a-button>
+      </a-form-item>
+    </a-form>
+  </div>
+</template>
+
+<script>
+export default {
+  data() {
+    this.form = this.$form.createForm(this);
+    return {
+      formItemLayout: {
+        labelCol: { span: 4 },
+        wrapperCol: { span: 14 }
+      }
+    };
+  },
+  computed: {
+    step() {
+      return this.$store.state.form.step;
+    }
+  },
+  methods: {
+    handleSubmit() {
+      const { form, $store, step } = this;
+      form.validateFields((err, values) => {
+        if (!err) {
+          $store.dispatch({
+            type: "form/submitStepForm",
+            payload: { ...step, ...values }
+          });
+        }
+      });
+    },
+    onPrev() {
+      this.$router.push("/form/step-form/info");
+    }
+  }
+};
+</script>
+
+<style></style>
+
+```
+1. Step3.vue
+```
+<template>
+  <div>
+    操作成功，预计两小时到账
+  </div>
+</template>
+
+<script>
+export default {};
+</script>
+
+<style></style>
+
+```
