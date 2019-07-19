@@ -1,5 +1,7 @@
 <template>
   <div>
+    {{ $t("message")["app.dashboard.analysis.timeLabel"] }} :
+    <a-date-picker></a-date-picker>
     <Chart :option="chartOption" style="height:600px"></Chart>
   </div>
 </template>
@@ -29,7 +31,6 @@ export default {
         method: "get",
         params: { ID: 12345 }
       }).then(res => {
-        console.log(res);
         this.chartOption = {
           title: {
             text: "ECharts 入门示例"

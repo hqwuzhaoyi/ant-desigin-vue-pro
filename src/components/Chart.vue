@@ -6,6 +6,7 @@
 import echarts from "echarts/lib/echarts";
 import "echarts/lib/chart/bar";
 import "echarts/lib/component/title";
+
 import debounce from "lodash/debounce";
 import { addListener, removeListener } from "resize-detector";
 export default {
@@ -40,7 +41,6 @@ export default {
   },
   methods: {
     resize() {
-      console.log("resize");
       this.chart.resize();
     },
     renderChart() {

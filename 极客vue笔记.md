@@ -731,3 +731,260 @@ chainWebpack: config => {
 import Logo from "@/assets/logo.svg";
 components:{Logo}
 ```
+# antd 自定义主题色
+```
+css: {
+    loaderOptions: {
+      less: {
+        modifyVars: {
+          "primary-color": "#1DA57A",
+          "link-color": "#1DA57A",
+          "border-radius-base": "2px"
+        },
+        javascriptEnabled: true
+      }
+    }
+  },
+```
+# 动态修改antd主题色
+`npm install -D antd-theme-webpack-plugin`
+```
+//vue.config.js
+const path = require("path");
+const AntDesignThemePlugin = require("antd-theme-webpack-plugin");
+
+const options = {
+  antDir: path.join(__dirname, "./node_modules/ant-desigin-vue"),
+  stylesDir: path.join(__dirname, "./src"), //默认样式目录
+  varFile: path.join(
+    __dirname,
+    "./node_modules/ant-desigin-vue/lib/style/themes/default.less"
+  ), //默认变量文件路径
+  mainLessFile: "", //默认样式主文件路径
+  themeVariables: ["@primary-color"], //默认主题变量（可以在浏览器中更新）
+  generateOnce: false,
+  lessUrl: "https://cdnjs.cloudflare.com/ajax/libs/less.js/2.7.2/less.min.js",
+  publicPath: ""
+};
+
+
+const themePlugin = new AntDesignThemePlugin(options);
+// in config object
+plugins: [
+    themePlugin
+  ]
+
+module.exports = {
+  configureWebpack: {
+    plugins: [themePlugin]
+  }
+}
+
+//index.html
+ <link rel="stylesheet/less" type="text/css" href="/color.less" />
+  <script>
+    window.less = {
+      async: false,
+      env: 'production',
+      javascriptEnabled: true,
+      modifyVars: {
+        "primary-color": "#1DA57A"
+      }
+    };
+  </script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/less.js/2.7.2/less.min.js"></script>
+
+//setting-drawer/index.less
+
+@import "~ant-design-vue/lib/style/themes/default.less";
+.setting-drawer-handle {
+    position: absolute;
+    top: 240px;
+    right: 300px;
+    width: 48px;
+    height: 48px;
+    background: @primary-color;
+    color: #fff;
+    font-size: 20px;
+    text-align: center;
+    line-height: 48px;
+    border-radius: 3px 0 0 3px;
+  }
+
+//console命令
+window.less.modifyVars("@primary-color":"red")
+```
+
+// 国际化(vue i18n)
+在header添加语言切换<br>
+在analysis添加日历
+```
+import {
+  LocaleProvider,
+  Dropdown,
+  DatePicker
+} from "ant-design-vue";
+Vue.use(LocaleProvider);
+Vue.use(Dropdown);
+Vue.use(DatePicker);
+//App.vue 项目入口
+<template>
+  <div id="app">
+    <a-locale-provider :locale="locale">
+      <router-view />
+    </a-locale-provider>
+  </div>
+</template>
+<script>
+import zhCN from "ant-design-vue/lib/locale-provider/zh_CN";
+import enUS from "ant-design-vue/lib/locale-provider/en_US";
+import moment from "moment";
+export default {
+  data() {
+    return {
+      locale: zhCN
+    };
+  },
+  watch: {
+    "$route.query.locale": function(val) {
+      this.locale = val === "enUS" ? enUS : zhCN;
+      moment.locale(val === "enUS" ? "en" : "zh-cn");
+    }
+  }
+};
+</script>
+
+//Header.vue
+<template>
+  <div class="header">
+    <a-dropdown>
+      <a-icon type="global"></a-icon>
+      <a-menu
+        slot="overlay"
+        @click="localeChange"
+        :selectedKeys="[$route.query.locale || 'zhCN']"
+      >
+        <a-menu-item key="zhCN">
+          中文
+        </a-menu-item>
+        <a-menu-item key="enUS">
+          English
+        </a-menu-item>
+      </a-menu>
+    </a-dropdown>
+  </div>
+</template>
+
+<script>
+export default {
+  methods: {
+    localeChange({ key }) {
+      this.$router.push({ query: { ...this.$route.query, locale: key } });
+    }
+  }
+};
+</script>
+
+<style scoped>
+.header {
+  float: right;
+  margin-right: 30px;
+}
+</style>
+```
+使用I18n
+`npm install vue-i18n`
+```
+//main.js
+import VueI18n from "vue-i18n";
+import enUS from "./locale/enUS";
+import zhCN from "./locale/zhCN";
+import queryString from "querystring";
+Vue.use(VueI18n);
+const i18n = new VueI18n({
+  locale: queryString.parse(location.search).locale || "zhCN",
+  messages: {
+    zhCN: { message: zhCN },
+    enUS: { message: enUS }
+  }
+});
+const IconFont = Icon.createFromIconfontCN({
+  scriptUrl: "//at.alicdn.com/t/font_1301960_5011bg8e03k.js" // 在 iconfont.cn 上生成
+});
+Vue.component("IconFont", IconFont);
+new Vue({
+  i18n,
+  router,
+  store,
+  render: h => h(App)
+}).$mount("#app");
+
+//zhCN.js
+export default {
+  "app.dashboard.analysis.timeLabel": "时间"
+};
+
+//enUS.js
+export default {
+  "app.dashboard.analysis.timeLabel": "Time"
+};
+
+//header.vue
+localeChange({ key }) {
+    this.$router.push({ query: { ...this.$route.query, locale: key } });
+      this.$i18n.locale = key;
+}
+
+//Analysis.vue
+  {{ $t("message")["app.dashboard.analysis.timeLabel"] }} :
+```
+
+# 高效构建打包
+`npm run build -- --report`生成打包报告<br>
+> github issues:包太大解决方法<br>
+> https://github.com/vueComponent/ant-design-vue/issues/325
+1. icon优化
+```
+//src/icon.js //全部ICON
+export {
+  default as SettingOutline
+} from "@ant-design/icons/lib/outline/SettingOutline";
+export {
+  default as GithubOutline
+} from "@ant-design/icons/lib/outline/GithubOutline";
+export {
+  default as CopyrightOutline
+} from "@ant-design/icons/lib/outline/CopyrightOutline";
+export {
+  default as CloseOutline
+} from "@ant-design/icons/lib/outline/CloseOutline";
+
+//vue.config.js
+ configureWebpack: {
+    plugins: [themePlugin],
+    resolve: {
+      alias: {
+        "@ant-design/icons/lib/dist$": path.resolve(__dirname, "./src/icons.js")
+      }
+    }
+  },
+```
+2. moment优化
+```
+// vue.config.js
+const webpack = require("webpack");
+ configureWebpack: {
+    plugins: [themePlugin, new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/)],//moment中的语言包不会自动加载
+ }
+
+//src/App.vue
+import "moment/locale/zh-cn";
+```
+3.Chart.js优化
+```
+//src/components/Chart.vue
+   -   import echarts from "echarts";
+   +   import echarts from "echarts/lib/echarts";
+   +   import "echarts/lib/chart/bar";
+   +   import "echarts/lib/component/title";
+```
