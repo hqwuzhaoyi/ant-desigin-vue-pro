@@ -27,6 +27,10 @@ import {
 } from "ant-design-vue";
 import Authorized from "./components/Authorized";
 import Auth from "./directives/auth";
+
+// Import Vue and vue-highlgihtjs
+import VueHighlightJS from "vue-highlightjs";
+
 Vue.config.productionTip = false;
 
 // Vue.use(antd);
@@ -47,6 +51,9 @@ Vue.component("Authorized", Authorized);
 Vue.use(Auth);
 
 Vue.use(VueI18n);
+
+// Tell Vue.js to use vue-highlightjs
+Vue.use(VueHighlightJS);
 
 const i18n = new VueI18n({
   locale: queryString.parse(location.search).locale || "zhCN",

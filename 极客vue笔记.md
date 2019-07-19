@@ -980,7 +980,7 @@ const webpack = require("webpack");
 //src/App.vue
 import "moment/locale/zh-cn";
 ```
-3.Chart.js优化
+3. Chart.js优化
 ```
 //src/components/Chart.vue
    -   import echarts from "echarts";
@@ -988,3 +988,47 @@ import "moment/locale/zh-cn";
    +   import "echarts/lib/chart/bar";
    +   import "echarts/lib/component/title";
 ```
+
+# 构建可交互的组件文档
+`npm install --save-dev raw-loader`
+```
+import Chart from "../../components/Chart";
+import chartCode from 'raw-loader!../../components/Chart';//将文件作为字符串导入。
+ data() {
+    return {
+      chartOption: {},
+      chartCode
+    };
+  }
+```
+`npm install --save vue-highlightjs`
+高亮Vue语法
+```
+//main.js
+import VueHighlightJS from "vue-highlightjs";
+Vue.use(VueHighlightJS);
+//analysis.vue
+ <pre v-highlightjs="chartCode"><code class="html"></code></pre>
+ data() {
+    return {
+      chartOption: {},
+      chartCode
+    };
+import chartCode from "!!raw-loader!../../components/Chart";
+import "highlight.js/styles/github.css";//high.js样式文件
+```
+
+# 单元测试
+https://vue-test-utils.vuejs.org/zh/guides/#%E7%94%A8-jest-%E6%B5%8B%E8%AF%95%E5%8D%95%E6%96%87%E4%BB%B6%E7%BB%84%E4%BB%B6
+```
+//jest.config.js
+ testMatch: ["**/*.spec.(js|jsx|ts|tsx)|**/__tests__/*.(js|jsx|ts|tsx)"],
+ collectCoverage: process.env.COVERAGE === "true",
+ collectCoverageFrom: ["src/**/*.{js,vue}", "!**/node_modules/**"] //把哪些文件列入进来进行测试
+//.eslintrc.js
+  env: {
+    node: true,
+    jest: true
+  }
+```
+`npm run test:unit -- --watch`更改测试用例的时候自动执行

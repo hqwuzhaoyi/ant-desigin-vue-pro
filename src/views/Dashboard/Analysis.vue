@@ -3,16 +3,20 @@
     {{ $t("message")["app.dashboard.analysis.timeLabel"] }} :
     <a-date-picker></a-date-picker>
     <Chart :option="chartOption" style="height:600px"></Chart>
+    <pre v-highlightjs="chartCode"><code class="html"></code></pre>
   </div>
 </template>
 
 <script>
 import Chart from "../../components/Chart";
 import request from "../../utils/request";
+import chartCode from "!!raw-loader!../../components/Chart";
+import "highlight.js/styles/github.css";
 export default {
   data() {
     return {
-      chartOption: {}
+      chartOption: {},
+      chartCode
     };
   },
   components: {
